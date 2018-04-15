@@ -13,6 +13,18 @@
     li
       opacity .6
 
+  .bookLoader
+    padding .5rem 0 1.5rem
+    background $blue
+    display block
+
+    span.progressTicker
+      margin auto
+      display block
+
+      span
+        background white
+
   .bookEntry,
   .emptyList
     overflow hidden
@@ -63,6 +75,10 @@
             width 70%
             float left
 
+            img
+              height 15px
+              margin 1px 5px 0 0
+
             .title
               float left
               margin 0 0 7px 0
@@ -88,7 +104,6 @@
                 color black
 
               .language
-                // text-transform capitalize
                 float left
                 font-weight 100
                 text-align center

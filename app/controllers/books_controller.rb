@@ -1,5 +1,5 @@
 class BooksController < AuthenticatedController
-  skip_before_filter :authenticate_user!, only: [:show]
+  skip_before_filter :authenticate_user!, only: [:show, :show_more]
 
   def show
     @users=User.all
@@ -22,13 +22,14 @@ class BooksController < AuthenticatedController
   end
 
   def create
-    book = current_user.books.create(create_or_update_params)
-    if book.present?
+    book = current_user.books.build(create_or_update_params)
+
+    if book.present? && book.save
       authorize book
       render json: { id: book.id }, status: :ok
     else
       skip_authorization
-      render json: { errors: book.errors.messages }, status: 422
+      render json: { errors: book.errors.full_messages }, status: 422
     end
   end
 
@@ -37,6 +38,13 @@ class BooksController < AuthenticatedController
     if book.present?
       authorize book
       book.destroy
+      
+      # Also destroy FavoriteBook records of this book
+      FavoriteBook.where(book_id: params[:id])
+        .map do |fav_book|
+          fav_book.destroy
+        end
+      
       render json: {}, status: :ok
     else
       skip_authorization
@@ -49,8 +57,11 @@ class BooksController < AuthenticatedController
     authorize book
     if book.present?
      authorize book
-     book.update_attributes(create_or_update_params)
+     if book.update_attributes(create_or_update_params)
       render json: {}, status: :ok
+     else
+      render json: { errors: book.errors.full_messages }, status: 422
+     end
     else
       skip_authorization
       render json: { errors: book.errors.messages }, status: 422
@@ -70,6 +81,19 @@ class BooksController < AuthenticatedController
     else
       redirect_to :back, notice: 'Nothing happened.'
     end
+  end
+
+  def show_more
+    skip_authorization
+    page = params[:page]
+
+    books = Book
+      .most_recent_with_content(page)
+      .map do |book|
+        BookSerializer.new(book)
+    end
+
+    render json: books, status: 200
   end
 
   private

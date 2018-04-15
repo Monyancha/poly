@@ -58,6 +58,7 @@ class PhrasePair extends React.Component {
           },
         },
         success: function () {
+          this.props.onSaveEditPhrase(this.props.id, this.state.sourcePhrase, this.state.targetPhrase);
           this.toggleEditingPhraseState();
         }.bind(this),
         error() {
@@ -225,7 +226,7 @@ class PhrasePair extends React.Component {
     }
     return (
       <p>
-        <Progress />
+        <Progress/>
       </p>
     );
   }
